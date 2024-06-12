@@ -3,46 +3,37 @@ Splodey Auto Splitter
 Written by roddy
 Date: June 12, 2024
 */
-
-state("Splodey", "1.0.6")
-{
-    byte room_id: "Splodey.exe", 0xC135D8;
-}
-
-state("Splodey", "1.0.7")
-{
-    byte room_id: "Splodey.exe", 0xC15798;
-}
-
 state("Splodey", "1.0.8")
 {
     byte room_id: "Splodey.exe", 0xC1FB88;
     float player_x: "Splodey.exe", 0xa0ca50, 0x0, 0xc40, 0x18, 0x70, 0x10, 0x198, 0xe8;
 }
 
-
 init {
+    version = "";
+
     switch(modules.First().ModuleMemorySize) {
-        // old versions won't really work because I don't see a reason to use them
-        // I mean, they will still split but it won't split on 4-25 because I'm not tracking for player X position and I don't really want to track for their pointers.
-        case 13381632: 
-            version = "1.0.6";
-        break;
-
-        case 13389824:
-            version = "1.0.7";
-        break;
-
         case 13434880:
             version = "1.0.8";
         break;
     }
 
+    // Show warning if game version is not up to date.
+    if (version != "1.0.8") {
+        var versionMessage = MessageBox.Show (
+			"Warning: You are using an outdated version of Splodey.\n"+
+			"This script only works with the latest version of the game, v1.0.8.\n"+
+			"Please update your game.",
+			"Splodey Autosplitter",
+		MessageBoxButtons.OK, MessageBoxIcon.Warning);
+    }
+    
+    // These are the room IDs for the levels. World 5 is not included here.
     vars.room_ids = new List<int>{
         // Academy
         018, 027, 008, 005, 035,
         012, 017, 004, 015, 006, 
-        021, 028, 007, 106, 13, 
+        021, 028, 007, 106, 013, 
         023, 107, 011, 029, 034, 
         031, 022, 033, 009, 134,
 
@@ -68,38 +59,6 @@ init {
         163, 165, 166, 167, 105
     };
 
-    /*
-    vars.room_ids = new List<int>{
-        //18
-        27, 8, 5, 35,
-        12, 17, 4, 15, 6, 
-        21, 28, 7, 106, 13, 
-        23, 107, 11, 29, 34, 
-        31, 22, 33, 9, 134, 188,
-
-        //37
-        39, 40, 41, 44, 
-        46, 154, 47, 49, 59, 
-        50, 51, 38, 54, 42, 
-        52, 56, 48, 57, 58, 
-        152, 153, 155, 61, 60, 188,
-
-        // 62
-        63, 64, 65, 66,
-        157, 10, 72, 162, 69,
-        73, 76, 77, 75, 78, 
-        80, 82, 81, 156, 68,
-        159, 160, 161, 158, 84, 188,
-
-        //91
-        99, 86, 87, 85, 
-        100, 89, 95, 101, 92, 
-        164, 20, 94, 96, 98, 
-        88, 168, 102, 103, 93, 
-        163, 165, 166, 167, 105
-    };
-    */
-
     vars.last_levels = new List<int>{
         134, 60, 84, 105
     };
@@ -107,6 +66,10 @@ init {
 }
 
 startup {
+    // This script runs 60 times per second, same as the game. Change this to whatever you'd like, like a little lower if it lags your game.
+    refreshRate = 60;
+
+    // Ask the player to switch to Real Time if LiveSplit is set to Game Time.
     if (timer.CurrentTimingMethod == TimingMethod.GameTime){
 		var timingMessage = MessageBox.Show (
 			"This contest uses Real Time as the timing method.\n"+
@@ -125,10 +88,8 @@ startup {
 }
 
 start {
-    if (current.room_id == 18) {
-        vars.current_split = 0;
-        return true;
-    }
+    // Start on Level 1-1
+    return (current.room_id == 18);
 }
 
 reset {
@@ -137,17 +98,23 @@ reset {
 }
 
 split {
-    if (current.room_id != 105) {
-        if (settings["per_level"]) {
-            if (old.room_id == vars.room_ids[timer.CurrentSplitIndex]) {
-                return true;
-            }
-        } else {
-            if (current.room_id == 188 && old.room_id == vars.last_levels[timer.CurrentSplitIndex]) {
-                return true;
-            }
+    // Check if current room is Level 4-25
+    if (current.room_id == 105) {
+        // Check if player is past the portal
+        if (current.player_x >= 15893) {
+            return true;
         }
     } else {
-        return current.player_x >= 15893;
+        // If Per Level setting is enabled
+        if (settings["per_level"]) {
+            // If room changed and the new room is the one expected for the next split
+            if (old.room_id != current.room_id && current.room_id == vars.room_ids[timer.CurrentSplitIndex+1]) {
+                // Split if old room was the expected one for this split.
+                return (old.room_id == vars.room_ids[timer.CurrentSplitIndex]);
+            }
+        } else {
+            // If per world setting is enabled, only split if player is back to hub and the old room was the expected one.
+            return (current.room_id == 188 && old.room_id == vars.last_levels[timer.CurrentSplitIndex]);
+        }
     }
 }
