@@ -108,7 +108,7 @@ split {
     // If Per Level setting is enabled
     if (settings["per_level"]) {
         // If room changed and the new room is the one expected for the next split
-        if (old.room_id != current.room_id && current.room_id == vars.room_ids[timer.CurrentSplitIndex+1]) {
+        if (old.room_id != current.room_id) {
             // Split if old room was the expected one for this split.
             return (old.room_id == vars.room_ids[timer.CurrentSplitIndex]);
         }
