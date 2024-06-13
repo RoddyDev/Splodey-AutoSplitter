@@ -27,7 +27,7 @@ init {
 			"Splodey Autosplitter",
 		MessageBoxButtons.OK, MessageBoxIcon.Warning);
     }
-    
+
     // These are the room IDs for the levels. World 5 is not included here.
     vars.room_ids = new List<int>{
         // Academy
@@ -56,7 +56,7 @@ init {
         100, 089, 095, 101, 092, 
         164, 020, 094, 096, 098, 
         088, 168, 102, 103, 093, 
-        163, 165, 166, 167, 105
+        163, 165, 166, 167, 105, 0
     };
 
     vars.last_levels = new List<int>{
@@ -104,17 +104,16 @@ split {
         if (current.player_x >= 15893) {
             return true;
         }
-    } else {
-        // If Per Level setting is enabled
-        if (settings["per_level"]) {
-            // If room changed and the new room is the one expected for the next split
-            if (old.room_id != current.room_id && current.room_id == vars.room_ids[timer.CurrentSplitIndex+1]) {
-                // Split if old room was the expected one for this split.
-                return (old.room_id == vars.room_ids[timer.CurrentSplitIndex]);
-            }
-        } else {
-            // If per world setting is enabled, only split if player is back to hub and the old room was the expected one.
-            return (current.room_id == 188 && old.room_id == vars.last_levels[timer.CurrentSplitIndex]);
+    }
+    // If Per Level setting is enabled
+    if (settings["per_level"]) {
+        // If room changed and the new room is the one expected for the next split
+        if (old.room_id != current.room_id && current.room_id == vars.room_ids[timer.CurrentSplitIndex+1]) {
+            // Split if old room was the expected one for this split.
+            return (old.room_id == vars.room_ids[timer.CurrentSplitIndex]);
         }
+    } else {
+        // If per world setting is enabled, only split if player is back to hub and the old room was the expected one.
+        return (current.room_id == 188 && old.room_id == vars.last_levels[timer.CurrentSplitIndex]);
     }
 }
