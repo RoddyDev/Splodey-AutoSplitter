@@ -1,7 +1,8 @@
 /* 
 Splodey Auto Splitter
 Written by roddy
-Date: June 26, 2024
+Date: June 26, 2024 (v1.1.2)
+      May 12, 2025  (v1.1.4)
 */
 
 state("Splodey", "1.1.2")
@@ -10,18 +11,27 @@ state("Splodey", "1.1.2")
     float player_x: "Splodey.exe", 0xC2C460, 0x1A0, 0x320, 0x78, 0x18, 0x70, 0x38, 0xE8;
 }
 
+state("Splodey", "1.1.4")
+{
+    byte room_id: "Splodey.exe", 0xBB1880;
+    float player_x: "Splodey.exe", 0xBAF2E8, 0x300, 0x58, 0x10, 0x1A0, 0x128;
+}
+
 init {
     version = "";
-
 
     if (modules.First().ModuleMemorySize == 13488128) {
         version = "1.1.2";
     }
 
+    if (modules.First().ModuleMemorySize == 15241216) {
+        version = "1.1.4";
+    }
+
     // Show warning if game version is not up to date.
-    if (version != "1.1.2") {
+    if (version != "1.1.4") {
         var versionMessage = MessageBox.Show (
-			"Warning: Wrong game version found. Expecting v1.1.2\n"+
+			"Warning: Wrong game version found. Expecting v1.1.4\n"+
 			"This means that either the autosplitter or the game is outdated. Please check.\n",
 			"Splodey Autosplitter",
 		MessageBoxButtons.OK, MessageBoxIcon.Warning);
