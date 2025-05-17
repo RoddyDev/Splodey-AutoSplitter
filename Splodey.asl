@@ -122,7 +122,7 @@ split {
     // Check if current room is Level 4-25
     if (current.room_id == 105) {
         // Check if player is past the portal
-        if (current.player_x >= 15893) {
+        if (current.player_x >= 15888) {
             return true;
         }
     }
